@@ -2578,6 +2578,7 @@
     <string name="dice_roll">Roll the dice</string>
     <string name="dice_title">What plays today?</string>
     <string name="dice_empty_playlist">That playlist is empty — roll again</string>
+    <string name="dice_jackpot">Jackpot!</string>
     <string name="repeat_all">Repeat all</string>
     <string name="repeat_one">Repeat one</string>
     <string name="repeat_off">Repeat off</string>

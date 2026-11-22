@@ -1,5 +1,10 @@
 # Divora — Changelog
 
+## 1.0.6
+
+- El dado de la Biblioteca ya es una imagen PNG sin fondo, mejor diseñada. Al tocarlo sale una máquina tragaperras a pantalla completa: baja la palanca, los tres rodillos giran con las playlists guardadas y se paran uno a uno en la misma ganadora (jackpot), con sonidos de rodillo y de premio; salen las canciones de la ganadora una a una y empieza a sonar.
+- Actualización desde la app corregida: si el instalador no dejaba ninguna pantalla que reabrir, el botón se quedaba sin hacer nada en "Instalando"; ahora vuelve a intentar la instalación. Y si al buscar actualizaciones GitHub no contesta, la app ya no se cierra sin decir nada: avisa el motivo.
+
 ## 1.0.5
 
 - Dado de la ruleta en la Biblioteca, esquina inferior derecha: al tocarlo se abre una animación formato ruleta jackpot a pantalla completa, con las playlists guardadas desfilando en una ventanilla que va frenando hasta caer en una al azar, y esa playlist empieza a sonar. Si la playlist ganadora está vacía, avisa y no suena nada. El dado solo aparece cuando hay playlists guardadas.

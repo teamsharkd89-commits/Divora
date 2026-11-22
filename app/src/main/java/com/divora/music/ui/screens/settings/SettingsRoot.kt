@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.divora.music.BuildConfig
 import com.divora.music.R
+import com.divora.music.data.friendlyMessage
 import com.divora.music.data.prefs.AppSettings
 import com.divora.music.tr
 import com.divora.music.ui.LocalNavigator
@@ -302,6 +303,7 @@ private fun SettingsHeaderCard() {
 @Composable
 private fun CheckUpdatesRow() {
     val c = LocalContainer.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val update by c.updates.available.collectAsState()
     if (update != null) return
     val scope = rememberCoroutineScope()
@@ -321,7 +323,13 @@ private fun CheckUpdatesRow() {
                 if (checking) return@LinkRow
                 scope.launch {
                     checking = true
-                    upToDate = c.updates.checkNow() == null
+                    // 1.0.6: si GitHub no contesta, antes la app se cerraba aquí sin decir nada; ahora
+                    // avisa el motivo y la fila se queda como estaba, para reintentarlo.
+                    val result = runCatching { c.updates.checkNow() }
+                    upToDate = result.getOrNull() == null
+                    result.exceptionOrNull()?.let {
+                        android.widget.Toast.makeText(context, it.friendlyMessage(), android.widget.Toast.LENGTH_LONG).show()
+                    }
                     checking = false
                 }
             },

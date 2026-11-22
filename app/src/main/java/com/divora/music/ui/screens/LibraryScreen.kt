@@ -993,21 +993,19 @@ fun LibraryScreen(bottomPadding: Dp) {
         if (diceRoll) {
             DiceRouletteOverlay(
                 playlists = myPlaylists,
-                onPick = { winner ->
+                loadSongs = { p -> c.playlistSongs.songs(p.id).orEmpty() },
+                onPlay = { winner, songs ->
                     diceRoll = false
-                    scope.launch {
-                        val songs = c.playlistSongs.songs(winner.id)
-                        if (songs.isNullOrEmpty()) {
-                            android.widget.Toast.makeText(context, tr(R.string.dice_empty_playlist), android.widget.Toast.LENGTH_SHORT).show()
-                        } else {
-                            c.player.playQueue(
-                                songs, 0,
-                                com.divora.music.playback.QueueSource(
-                                    com.divora.music.playback.QueueKind.PLAYLIST, winner.title,
-                                    originId = winner.id.removePrefix("VL"), page = winner,
-                                ),
-                            )
-                        }
+                    if (songs.isEmpty()) {
+                        android.widget.Toast.makeText(context, tr(R.string.dice_empty_playlist), android.widget.Toast.LENGTH_SHORT).show()
+                    } else {
+                        c.player.playQueue(
+                            songs, 0,
+                            com.divora.music.playback.QueueSource(
+                                com.divora.music.playback.QueueKind.PLAYLIST, winner.title,
+                                originId = winner.id.removePrefix("VL"), page = winner,
+                            ),
+                        )
                     }
                 },
                 onDismiss = { diceRoll = false },

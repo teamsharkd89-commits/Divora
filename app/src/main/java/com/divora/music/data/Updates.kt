@@ -172,9 +172,19 @@ class UpdateChecker(private val context: Context, private val http: OkHttpClient
     fun install(update: AppUpdate) {
         // One update at a time (#278: a second tap could start a second download and a second install): while one is
         // downloading nothing new starts, and while Android's installer waits for the listener, its screen comes back.
+        // 1.0.6: if the installer left no screen to reopen (its confirm was already gone, or the session went quiet),
+        // the tap used to do nothing at all and the banner stayed stuck on "Installing" — now it starts over instead.
         when (installStep(_progress.value, job?.isActive == true)) {
             InstallStep.WAIT -> return
-            InstallStep.REOPEN -> { pendingConfirm?.let { runCatching { context.startActivity(Intent(it).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } }; return }
+            InstallStep.REOPEN -> {
+                val confirm = pendingConfirm
+                if (confirm != null) {
+                    runCatching { context.startActivity(Intent(confirm).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                    return
+                }
+                // Sin pantalla que reabrir: se sigue abajo y la instalación se reintenta (la sesión
+                // anterior se abandona en startSession, así que nunca hay dos a la vez).
+            }
             InstallStep.START -> Unit
         }
         if (!canInstall()) { _progress.value = UpdateProgress.NeedsPermission; return }
