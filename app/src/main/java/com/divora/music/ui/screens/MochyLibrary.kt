@@ -1,7 +1,11 @@
 package com.divora.music.ui.screens
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -445,10 +449,10 @@ fun DiceRouletteOverlay(
         delay(1000)
         if (!gone) onPlay(winner, winSongs!!)
     }
-    val infinite = androidx.compose.animation.core.rememberInfiniteTransition()
+    val infinite = rememberInfiniteTransition()
     val flashAlpha by infinite.animateFloat(
         0.45f, 1f,
-        androidx.compose.animation.core.infiniteRepeatable(tween(450), androidx.compose.animation.core.RepeatMode.Reverse),
+        infiniteRepeatable(tween(450), RepeatMode.Reverse),
         label = "jackpot",
     )
     val winScale by animateFloatAsState(if (allStopped) 1.05f else 1f, tween(300))
