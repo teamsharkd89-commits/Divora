@@ -533,7 +533,7 @@ fun LibraryScreen(bottomPadding: Dp) {
                         if (localSongs.isEmpty()) item(key = "local-empty") {
                             EmptyState(DivoraIcons.Phone, tr(R.string.local_files), tr(R.string.music_files_on_this_phone))
                         }
-                        items(localSongs, key = { "ls" + it.id }) { s ->
+                        items(items = localSongs, key = { it.id }) { s ->
                             SongRow(s) { c.player.playQueue(localSongs, localSongs.indexOf(s), com.divora.music.playback.QueueSource(com.divora.music.playback.QueueKind.LIBRARY, tr(R.string.local_files))) }
                         }
                         item(key = "local-open") {
@@ -545,7 +545,7 @@ fun LibraryScreen(bottomPadding: Dp) {
                         if (downloadedSongs.isEmpty()) item(key = "cached-empty") {
                             EmptyState(DivoraIcons.DownloadDone, tr(R.string.downloads), tr(R.string.like_or_download_songs_or_star))
                         }
-                        items(downloadedSongs, key = { "ds" + it.id }) { s ->
+                        items(items = downloadedSongs, key = { it.id }) { s ->
                             SongRow(s) { c.player.playQueue(downloadedSongs, downloadedSongs.indexOf(s), com.divora.music.playback.QueueSource(com.divora.music.playback.QueueKind.LIBRARY, tr(R.string.downloads))) }
                         }
                         item(key = "cached-open") {
@@ -560,7 +560,7 @@ fun LibraryScreen(bottomPadding: Dp) {
                         item(key = "import-link") {
                             MochyHomeRow(tr(R.string.open_a_link), tr(R.string.youtube_com_playlist_list), { openingLink = true }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
                         }
-                        items(spotifyFollowed, key = { "sf" + it.id }) { p ->
+                        items(items = spotifyFollowed, key = { it.id }) { p ->
                             MochyHomeRow(p.name, p.ownerName.ifBlank { tr(R.string.spotify) }, { followedOpen = p }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
                         }
                         if (!settings.isLoggedIn && spotifyFollowed.isEmpty()) item(key = "import-empty") {
