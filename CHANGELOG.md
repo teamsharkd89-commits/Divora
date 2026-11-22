@@ -1,5 +1,9 @@
 # Divora — Changelog
 
+## 1.0.5
+
+- Dado de la ruleta en la Biblioteca, esquina inferior derecha: al tocarlo se abre una animación formato ruleta jackpot a pantalla completa, con las playlists guardadas desfilando en una ventanilla que va frenando hasta caer en una al azar, y esa playlist empieza a sonar. Si la playlist ganadora está vacía, avisa y no suena nada. El dado solo aparece cuando hay playlists guardadas.
+
 ## 1.0.4
 
 - Biblioteca nueva, diseño propio a partir de Mochy con el sistema de Prism: portada con pastillas Todo, Local, Descargas e Importado, tarjetas de Canciones, Playlists, Álbumes y Artistas con el número grande y dos portadas apiladas, y tarjetas anchas de Recién añadido y Me gusta. Historial, Descargas y Etiquetas siguen, como filas de la portada. Local muestra los archivos del teléfono, Descargas las canciones ya bajadas para escuchar sin internet, e Importado las importaciones y las playlists de Spotify que sigues. Al tocar una tarjeta se abre la lista de siempre de Prism, con su orden, su búsqueda y sus funciones; "‹ Biblioteca" vuelve a la portada.

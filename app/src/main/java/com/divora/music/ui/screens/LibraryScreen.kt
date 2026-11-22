@@ -232,6 +232,8 @@ fun LibraryScreen(bottomPadding: Dp) {
     // de Prism siguen detrás, una por tarjeta. "‹ Biblioteca" vuelve a la portada.
     var mochyHome by rememberSaveable { mutableStateOf(true) }
     var mochyTab by rememberSaveable { mutableStateOf(0) }
+    // El dado de la ruleta (1.0.5): una playlist al azar de la biblioteca, con animación jackpot.
+    var diceRoll by remember { mutableStateOf(false) }
     fun openLibTab(tab: LibTab) {
         mochyHome = false
         scope.launch { pager.animateScrollToPage(tabs.indexOf(tab).coerceAtLeast(0)) }
@@ -448,6 +450,7 @@ fun LibraryScreen(bottomPadding: Dp) {
     val hasUploads by c.uploads.has.collectAsState()
     LaunchedEffect(settings.isLoggedIn, settings.dataSyncId) { c.uploads.check() }
 
+    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
     Column(Modifier.fillMaxSize()) {
         com.divora.music.ui.components.ScreenHeader(tr(R.string.library)) {
             // All of the library at once, with filters (1.8.3).
@@ -975,6 +978,39 @@ fun LibraryScreen(bottomPadding: Dp) {
             }
             }
         }
+        }
+    }
+        // Dado de la ruleta, esquina inferior derecha de la Biblioteca (solo si hay playlists
+        // guardadas). La ruleta va encima de todo, a pantalla completa.
+        if (myPlaylists.isNotEmpty()) {
+            DiceFabButton(
+                tr(R.string.dice_roll),
+                { diceRoll = true },
+                Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(end = 16.dp, bottom = bottomPadding + 16.dp),
+            )
+        }
+        if (diceRoll) {
+            DiceRouletteOverlay(
+                playlists = myPlaylists,
+                onPick = { winner ->
+                    diceRoll = false
+                    scope.launch {
+                        val songs = c.playlistSongs.songs(winner.id)
+                        if (songs.isNullOrEmpty()) {
+                            android.widget.Toast.makeText(context, tr(R.string.dice_empty_playlist), android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            c.player.playQueue(
+                                songs, 0,
+                                com.divora.music.playback.QueueSource(
+                                    com.divora.music.playback.QueueKind.PLAYLIST, winner.title,
+                                    originId = winner.id.removePrefix("VL"), page = winner,
+                                ),
+                            )
+                        }
+                    }
+                },
+                onDismiss = { diceRoll = false },
+            )
         }
     }
 
