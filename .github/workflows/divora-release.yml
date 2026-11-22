@@ -1,0 +1,32 @@
+name: Divora Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'ID of the Divora APK workflow run to take the APK from'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: divora-1.0.0-release
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: apk
+      - name: Upload APK to release v1.0.0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ls -lh apk/
+          cp apk/*.apk Divora-1.0.0.apk
+          ls -lh Divora-1.0.0.apk
+          gh release upload v1.0.0 Divora-1.0.0.apk --clobber
