@@ -1,5 +1,9 @@
 # Divora — Changelog
 
+## 1.0.3
+
+- Nuevo logo: la manita estilo cartoon agarrando un rayo encendido, en blanco y negro (la variante B/N 3 que eligió Daniel). Reemplaza los dos rayos cruzados en el icono de la app, en la tele, en el README y en la cabecera de Configuración; el icono de notificaciones sigue siendo el rayito blanco solo, porque la manita a ese tamaño no se distinguiría.
+
 ## 1.0.2
 
 - Configuración estilo Mochy: secciones limpias con solo el nombre y una descripción, filas con icono en círculo gris, sin colores de espectro ni cabeceras encimadas (en 1.0.1 la cabecera de cada sección caía encima de su primera fila).

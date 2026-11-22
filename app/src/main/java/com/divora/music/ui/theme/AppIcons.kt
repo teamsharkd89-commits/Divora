@@ -9,18 +9,18 @@ import com.divora.music.R
 /** The app icons to pick from (#20): each is a launcher activity-alias in the manifest, with its two layers. */
 enum class AppIcon(val label: String, val alias: String, val background: Int, val foreground: Int) {
     CLASSIC(tr(R.string.classic), ".MainActivity", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
-    SPECTRUM(tr(R.string.spectrum), ".IconSpectrum", R.drawable.ic_launcher_bg_spectrum, R.drawable.ic_launcher_fg_white),
-    SOLID(tr(R.string.solid), ".IconSolid", R.drawable.ic_launcher_background, R.drawable.ic_launcher_fg_solid),
-    LIGHT(tr(R.string.light), ".IconLight", R.drawable.ic_launcher_bg_light, R.drawable.ic_launcher_fg_dark),
-    WAVE(tr(R.string.wave), ".IconWave", R.drawable.ic_launcher_bg_wave, R.drawable.ic_launcher_fg_wave),
-    MIDNIGHT(tr(R.string.midnight), ".IconMidnight", R.drawable.ic_launcher_bg_midnight, R.drawable.ic_launcher_fg_midnight),
+    SPECTRUM(tr(R.string.spectrum), ".IconSpectrum", R.drawable.ic_launcher_bg_spectrum, R.drawable.ic_launcher_foreground),
+    SOLID(tr(R.string.solid), ".IconSolid", R.drawable.ic_launcher_background, R.drawable.ic_launcher_foreground),
+    LIGHT(tr(R.string.light), ".IconLight", R.drawable.ic_launcher_bg_light, R.drawable.ic_launcher_foreground),
+    WAVE(tr(R.string.wave), ".IconWave", R.drawable.ic_launcher_bg_wave, R.drawable.ic_launcher_foreground),
+    MIDNIGHT(tr(R.string.midnight), ".IconMidnight", R.drawable.ic_launcher_bg_midnight, R.drawable.ic_launcher_foreground),
     // 1.7.7.
-    DUSK(tr(R.string.dusk), ".IconDusk", R.drawable.ic_launcher_bg_dusk, R.drawable.ic_launcher_fg_white),
-    PAPER(tr(R.string.paper), ".IconPaper", R.drawable.ic_launcher_bg_paper, R.drawable.ic_launcher_fg_paper),
-    NEON(tr(R.string.neon), ".IconNeon", R.drawable.ic_launcher_bg_neon, R.drawable.ic_launcher_fg_neon),
-    PASTEL(tr(R.string.pastel), ".IconPastel", R.drawable.ic_launcher_bg_pastel, R.drawable.ic_launcher_fg_pastel),
-    LINE(tr(R.string.line), ".IconLine", R.drawable.ic_launcher_bg_line, R.drawable.ic_launcher_fg_line),
-    GOLD(tr(R.string.gold), ".IconGold", R.drawable.ic_launcher_bg_gold, R.drawable.ic_launcher_fg_gold),
+    DUSK(tr(R.string.dusk), ".IconDusk", R.drawable.ic_launcher_bg_dusk, R.drawable.ic_launcher_foreground),
+    PAPER(tr(R.string.paper), ".IconPaper", R.drawable.ic_launcher_bg_paper, R.drawable.ic_launcher_foreground),
+    NEON(tr(R.string.neon), ".IconNeon", R.drawable.ic_launcher_bg_neon, R.drawable.ic_launcher_foreground),
+    PASTEL(tr(R.string.pastel), ".IconPastel", R.drawable.ic_launcher_bg_pastel, R.drawable.ic_launcher_foreground),
+    LINE(tr(R.string.line), ".IconLine", R.drawable.ic_launcher_bg_line, R.drawable.ic_launcher_foreground),
+    GOLD(tr(R.string.gold), ".IconGold", R.drawable.ic_launcher_bg_gold, R.drawable.ic_launcher_foreground),
 }
 
 /**
