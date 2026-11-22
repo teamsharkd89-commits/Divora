@@ -533,8 +533,9 @@ fun LibraryScreen(bottomPadding: Dp) {
                         if (localSongs.isEmpty()) item(key = "local-empty") {
                             EmptyState(DivoraIcons.Phone, tr(R.string.local_files), tr(R.string.music_files_on_this_phone))
                         }
-                        items(items = localSongs, key = { it.id }) { s ->
-                            SongRow(s) { c.player.playQueue(localSongs, localSongs.indexOf(s), com.divora.music.playback.QueueSource(com.divora.music.playback.QueueKind.LIBRARY, tr(R.string.local_files))) }
+                        items(localSongs.size, key = { localSongs[it].id }) { i ->
+                            val s = localSongs[i]
+                            SongRow(s) { c.player.playQueue(localSongs, i, com.divora.music.playback.QueueSource(com.divora.music.playback.QueueKind.LIBRARY, tr(R.string.local_files))) }
                         }
                         item(key = "local-open") {
                             MochyHomeRow(tr(R.string.local_files), com.divora.music.data.model.songCount(localSongs.size), { nav.go(Routes.LOCAL) }, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
@@ -545,8 +546,9 @@ fun LibraryScreen(bottomPadding: Dp) {
                         if (downloadedSongs.isEmpty()) item(key = "cached-empty") {
                             EmptyState(DivoraIcons.DownloadDone, tr(R.string.downloads), tr(R.string.like_or_download_songs_or_star))
                         }
-                        items(items = downloadedSongs, key = { it.id }) { s ->
-                            SongRow(s) { c.player.playQueue(downloadedSongs, downloadedSongs.indexOf(s), com.divora.music.playback.QueueSource(com.divora.music.playback.QueueKind.LIBRARY, tr(R.string.downloads))) }
+                        items(downloadedSongs.size, key = { downloadedSongs[it].id }) { i ->
+                            val s = downloadedSongs[i]
+                            SongRow(s) { c.player.playQueue(downloadedSongs, i, com.divora.music.playback.QueueSource(com.divora.music.playback.QueueKind.LIBRARY, tr(R.string.downloads))) }
                         }
                         item(key = "cached-open") {
                             MochyHomeRow(tr(R.string.downloads), com.divora.music.data.model.songCount(downloadedSongs.size), { nav.go(Routes.DOWNLOADS) }, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
@@ -560,7 +562,8 @@ fun LibraryScreen(bottomPadding: Dp) {
                         item(key = "import-link") {
                             MochyHomeRow(tr(R.string.open_a_link), tr(R.string.youtube_com_playlist_list), { openingLink = true }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
                         }
-                        items(items = spotifyFollowed, key = { it.id }) { p ->
+                        items(spotifyFollowed.size, key = { spotifyFollowed[it].id }) { i ->
+                            val p = spotifyFollowed[i]
                             MochyHomeRow(p.name, p.ownerName.ifBlank { tr(R.string.spotify) }, { followedOpen = p }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
                         }
                         if (!settings.isLoggedIn && spotifyFollowed.isEmpty()) item(key = "import-empty") {
