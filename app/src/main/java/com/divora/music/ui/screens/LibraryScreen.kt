@@ -990,7 +990,7 @@ fun LibraryScreen(bottomPadding: Dp) {
                 Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(end = 16.dp, bottom = bottomPadding + 16.dp),
             )
         }
-        if (diceRoll) {
+        if (diceRoll && myPlaylists.isNotEmpty()) {
             DiceRouletteOverlay(
                 playlists = myPlaylists,
                 loadSongs = { p -> c.playlistSongs.songs(p.id).orEmpty() },

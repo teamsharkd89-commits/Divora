@@ -1,5 +1,12 @@
 # Divora — Changelog
 
+## 1.0.7
+
+- Novedades solo una vez y solo lo nuevo: el tour de bienvenida volvía a salir entero cada vez que se abría la app, porque sus páginas llevaban los números de versión viejos de Prism (39–67) y Divora cuenta desde 1; ahora cada novedad lleva la versión de Divora en la que salió, así que tras actualizar solo salen las de esa versión, una sola vez.
+- La tragaperras ya no se cierra sola: con pocas playlists los rodillos se salían de su cinta y la app se cerraba a los pocos segundos de girar; la cinta ahora se repite hasta cubrir todo el giro y termina siempre en la ganadora.
+- La tragaperras, con más espectáculo: los rodillos deslizan al girar, la palanca rebota al volver, y al ganar hay confeti, un destello dorado y el JACKPOT latiendo en dorado.
+- El dado y el jackpot ya hablan español: "¿Qué suena hoy?", "¡Jackpot!" y los avisos, que antes salían en inglés.
+
 ## 1.0.6
 
 - El dado de la Biblioteca ya es una imagen PNG sin fondo, mejor diseñada. Al tocarlo sale una máquina tragaperras a pantalla completa: baja la palanca, los tres rodillos giran con las playlists guardadas y se paran uno a uno en la misma ganadora (jackpot), con sonidos de rodillo y de premio; salen las canciones de la ganadora una a una y empieza a sonar.

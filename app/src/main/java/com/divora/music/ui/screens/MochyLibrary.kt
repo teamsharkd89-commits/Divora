@@ -1,17 +1,26 @@
 package com.divora.music.ui.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,13 +49,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.divora.music.R
@@ -323,10 +335,10 @@ private fun SlotReelCard(item: BrowseItem, highlighted: Boolean, modifier: Modif
     }
 }
 
-/** La palanca de la tragaperras: bola arriba, brazo abajo, gira al bajarla. */
+/** La palanca de la tragaperras: bola arriba, brazo abajo, gira al bajarla y rebota al volver. */
 @Composable
 private fun SlotLever(pulled: Boolean, modifier: Modifier = Modifier) {
-    val angle by animateFloatAsState(if (pulled) 52f else 0f, tween(380))
+    val angle by animateFloatAsState(if (pulled) 52f else 0f, spring(dampingRatio = 0.55f, stiffness = 280f))
     Box(modifier.size(48.dp, 190.dp), contentAlignment = Alignment.TopCenter) {
         // El riel por el que baja la palanca.
         Box(
@@ -375,14 +387,24 @@ fun DiceRouletteOverlay(
     onPlay: (BrowseItem, List<com.divora.music.data.model.Song>) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    // Sin playlists no hay nada que girar: se cierra sola (el dado solo aparece cuando hay).
+    if (playlists.isEmpty()) {
+        LaunchedEffect(Unit) { onDismiss() }
+        return
+    }
     val scheme = MaterialTheme.colorScheme
     val winner = remember(playlists) { playlists.random() }
-    // Cada rodillo tiene su propia cinta, que termina en la ganadora, y se para en su momento.
+    // Cada rodillo tiene su propia cinta, que termina en la ganadora, y se para en su momento. La cinta se repite
+    // hasta cubrir todo el giro (n + 1 cartas, la última la ganadora): con pocas playlists, tomar solo n cartas de
+    // dos barajadas se quedaba corta y el rodillo se salía de la cinta — la app se cerraba a los pocos segundos.
     val steps = listOf(22, 28, 34)
     val strips = remember(playlists, winner) {
         steps.map { n ->
-            val shuffled = playlists.shuffled() + playlists.shuffled()
-            (shuffled.take(n) + winner)
+            val cycle = playlists.shuffled() + playlists.shuffled()
+            buildList {
+                while (size < n) add(cycle[size % cycle.size])
+                add(winner)
+            }
         }
     }
     // Sonido sin archivos: pitidos del generador de tonos del sistema (rodillos y jackpot).
@@ -405,6 +427,8 @@ fun DiceRouletteOverlay(
     var winSongs by remember { mutableStateOf<List<com.divora.music.data.model.Song>?>(null) }
     var shownSongs by remember { mutableIntStateOf(0) }
     var gone by remember { mutableStateOf(false) }
+    // El destello dorado del jackpot: sube de golpe y se apaga.
+    val flash = remember { androidx.compose.animation.core.Animatable(0f) }
     // La palanca baja al abrir la máquina y los rodillos empiezan a girar.
     LaunchedEffect(Unit) {
         delay(350)
@@ -429,6 +453,7 @@ fun DiceRouletteOverlay(
     LaunchedEffect(allStopped) {
         if (!allStopped) return@LaunchedEffect
         leverDown = false
+        launch { flash.snapTo(0.5f); flash.animateTo(0f, tween(900)) }
         tones?.startTone(android.media.ToneGenerator.TONE_DTMF_1, 120)
         delay(140)
         tones?.startTone(android.media.ToneGenerator.TONE_DTMF_3, 120)
@@ -455,6 +480,12 @@ fun DiceRouletteOverlay(
         infiniteRepeatable(tween(450), RepeatMode.Reverse),
         label = "jackpot",
     )
+    // El JACKPOT late en dorado mientras se ve la ganadora.
+    val jackpotPulse by infinite.animateFloat(
+        1f, 1.12f,
+        infiniteRepeatable(tween(450), RepeatMode.Reverse),
+        label = "jackpotPulse",
+    )
     val winScale by animateFloatAsState(if (allStopped) 1.05f else 1f, tween(300))
     Box(
         Modifier
@@ -466,7 +497,8 @@ fun DiceRouletteOverlay(
             Text(tr(R.string.dice_title), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(18.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Los tres rodillos en su marco, con el borde dorado parpadeando al ganar.
+                // Los tres rodillos en su marco, con el borde dorado parpadeando al ganar. Cada rodillo desliza
+                // su carta al girar, como una cinta de verdad, y se estira un poco mientras va rápido.
                 Row(
                     Modifier
                         .border(2.dp, scheme.primary.copy(alpha = if (allStopped) flashAlpha else 0.9f), RoundedCornerShape(18.dp))
@@ -475,11 +507,24 @@ fun DiceRouletteOverlay(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     strips.forEachIndexed { i, strip ->
-                        SlotReelCard(
-                            strip[reelStep[i].intValue],
-                            highlighted = reelStopped[i].value,
-                            Modifier.scale(if (allStopped) winScale else 1f),
-                        )
+                        val step = reelStep[i].intValue
+                        val spinning = !reelStopped[i].value
+                        val stretch by animateFloatAsState(if (spinning && leverDown) 1.07f else 1f, tween(200), label = "reelStretch$i")
+                        androidx.compose.animation.AnimatedContent(
+                            targetState = step,
+                            transitionSpec = {
+                                (androidx.compose.animation.slideInVertically(tween(130)) { it } + androidx.compose.animation.fadeIn(tween(130))) togetherWith
+                                    (androidx.compose.animation.slideOutVertically(tween(130)) { -it } + androidx.compose.animation.fadeOut(tween(130)))
+                            },
+                            label = "reel$i",
+                            modifier = Modifier.graphicsLayer { scaleY = stretch }.clip(RoundedCornerShape(14.dp)),
+                        ) { s ->
+                            SlotReelCard(
+                                strip[s],
+                                highlighted = reelStopped[i].value,
+                                Modifier.scale(if (allStopped) winScale else 1f),
+                            )
+                        }
                     }
                 }
                 Spacer(Modifier.width(6.dp))
@@ -487,7 +532,18 @@ fun DiceRouletteOverlay(
             }
             Spacer(Modifier.height(14.dp))
             if (allStopped) {
-                Text(tr(R.string.dice_jackpot), color = Color(0xFFFFC94D), fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    tr(R.string.dice_jackpot),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        color = Color(0xFFFFC94D),
+                        fontWeight = FontWeight.Bold,
+                        shadow = androidx.compose.ui.graphics.Shadow(Color(0xFFFFC94D), androidx.compose.ui.geometry.Offset(0f, 0f), 18f),
+                    ),
+                    modifier = Modifier.graphicsLayer {
+                        val p = if (allStopped) jackpotPulse else 1f
+                        scaleX = p; scaleY = p
+                    },
+                )
                 Spacer(Modifier.height(8.dp))
             }
             // Las canciones de la ganadora salen una a una debajo de los rodillos.
@@ -514,5 +570,50 @@ fun DiceRouletteOverlay(
                 }
             }
         }
+        // Confeti y destello dorado sobre la máquina al ganar.
+        if (allStopped) JackpotConfetti(Modifier.fillMaxSize())
+        if (flash.value > 0.01f) Box(Modifier.fillMaxSize().background(Color(0xFFFFC94D).copy(alpha = flash.value)))
     }
 }
+
+/** Confeti del jackpot: piezas doradas, rojas y blancas que caen y giran sobre la máquina. */
+@Composable
+private fun JackpotConfetti(modifier: Modifier = Modifier) {
+    val infinite = rememberInfiniteTransition(label = "confetti")
+    val t by infinite.animateFloat(0f, 1f, infiniteRepeatable(tween(2600), RepeatMode.Restart), label = "fall")
+    val pieces = remember {
+        val rnd = kotlin.random.Random(7)
+        val colors = listOf(Color(0xFFFFC94D), Color(0xFFE5484D), Color.White, Color(0xFFFF8FC7), Color(0xFF7ED6A5))
+        List(28) {
+            ConfettiPiece(
+                x = rnd.nextFloat(),
+                phase = rnd.nextFloat(),
+                size = (6 + rnd.nextInt(7)).dp,
+                color = colors[rnd.nextInt(colors.size)],
+                spin = if (rnd.nextBoolean()) 1f else -1f,
+                round = rnd.nextBoolean(),
+            )
+        }
+    }
+    androidx.compose.foundation.layout.BoxWithConstraints(modifier) {
+        val w = constraints.maxWidth.toFloat()
+        val h = constraints.maxHeight.toFloat()
+        pieces.forEach { p ->
+            val y = ((t + p.phase) % 1f) * (h + 40f) - 40f
+            val x = p.x * w + kotlin.math.sin((t + p.phase) * 6.28f) * 10f
+            Box(
+                Modifier
+                    .offset { androidx.compose.ui.unit.IntOffset(x.toInt(), y.toInt()) }
+                    .size(p.size)
+                    .graphicsLayer {
+                        rotationZ = (t + p.phase) * 360f * p.spin
+                        alpha = ((h - y) / 60f).coerceIn(0f, 1f)
+                    }
+                    .clip(if (p.round) CircleShape else RoundedCornerShape(2.dp))
+                    .background(p.color),
+            )
+        }
+    }
+}
+
+private data class ConfettiPiece(val x: Float, val phase: Float, val size: Dp, val color: Color, val spin: Float, val round: Boolean)

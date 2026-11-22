@@ -5685,6 +5685,27 @@
     <string name="tour_1876_also_kids">Las canciones marcadas como para niños se reproducen sin iniciar sesión.</string>
     <string name="tour_1876_also_cast">En un altavoz de transmisión, una pulsación de la tecla de volumen es un paso.</string>
     <string name="tour_1876_also_history">Trae tu historial ahora está en Cuentas y compartir.</string>
+    <!-- Tarjetas del tour de las versiones propias de Divora (1.0.4, 1.0.6, 1.0.7). -->
+    <string name="tour_104_library_title">Una Biblioteca nueva</string>
+    <string name="tour_104_library_body">Tu biblioteca, clara: todo en un solo lugar, con su propio diseño.</string>
+    <string name="tour_104_library_point_1">Todo, Archivos locales, Descargas e Importado arriba.</string>
+    <string name="tour_104_library_point_2">Canciones, Playlists, Álbumes y Artistas con su número.</string>
+    <string name="tour_104_library_point_3">Historial, Descargas y Etiquetas como filas; toca una tarjeta para ver la lista de siempre.</string>
+    <string name="tour_106_slot_title">Tira el dado</string>
+    <string name="tour_106_slot_body">El dado de tu Biblioteca abre una tragaperras: tres rodillos giran con tus playlists y se paran en una ganadora, que empieza a sonar.</string>
+    <string name="tour_106_slot_point_1">Baja la palanca: los rodillos giran y se paran uno a uno.</string>
+    <string name="tour_106_slot_point_2">Los tres se paran en la misma playlist: jackpot.</string>
+    <string name="tour_106_slot_point_3">Sus canciones salen una a una y empieza a sonar.</string>
+    <string name="tour_107_slot_title">La tragaperras, con más espectáculo</string>
+    <string name="tour_107_slot_body">La máquina ya no se cierra sola: se paraba en un rodillo vacío. Ahora los rodillos deslizan al girar, el jackpot estalla en confeti y la ganadora brilla en dorado.</string>
+    <string name="tour_107_slot_point_1">Arreglado: la máquina se cerraba mientras giraban los rodillos.</string>
+    <string name="tour_107_slot_point_2">Los rodillos deslizan al girar y la palanca rebota al volver.</string>
+    <string name="tour_107_slot_point_3">Jackpot: confeti, destello dorado y las canciones de la ganadora.</string>
+    <!-- El dado y el jackpot, en español (antes solo estaban en inglés). -->
+    <string name="dice_roll">Tira el dado</string>
+    <string name="dice_title">¿Qué suena hoy?</string>
+    <string name="dice_empty_playlist">Esa playlist está vacía, tira otra vez</string>
+    <string name="dice_jackpot">¡Jackpot!</string>
     <string name="divora_canvas">Divora Canvas</string>
     <string name="spotify_canvas">Canvas de Spotify</string>
     <string name="spot_canvas_first">Primero el canvas de Spotify</string>
