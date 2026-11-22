@@ -1,5 +1,10 @@
 # Divora — Changelog
 
+## 1.0.2
+
+- Configuración estilo Mochy: secciones limpias con solo el nombre y una descripción, filas con icono en círculo gris, sin colores de espectro ni cabeceras encimadas (en 1.0.1 la cabecera de cada sección caía encima de su primera fila).
+- Divora ahora se firma con su propia llave en cada construcción, así las actualizaciones se instalan encima desde la app. Pasar de 1.0.1 a 1.0.2 pide una reinstalación guiada (copia, guardar el APK, desinstalar, instalar, restaurar) porque la 1.0.1 llevaba una llave de prueba; a partir de aquí ya no vuelve a pasar.
+
 ## 1.0.1
 
 - Configuración rediseñada: cabecera con el logo y la versión, secciones con icono y descripción (Hazlo tuyo, Escucha, Tu música, Conexiones, App) y su propio apartado de actualizaciones con "Buscar actualizaciones".

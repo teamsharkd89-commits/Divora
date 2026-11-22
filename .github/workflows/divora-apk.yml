@@ -21,6 +21,22 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      # Divora's own signing key: without it every build falls back to the runner's fresh debug key,
+      # so Android refuses to install one build over another ("signed with a different key").
+      - name: Restore release keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.DIVORA_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.DIVORA_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.DIVORA_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.DIVORA_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > divora-release.jks
+          cat > keystore.properties <<EOF
+          storeFile=divora-release.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
       - name: Build release APK
         run: ./gradlew assembleRelease --stacktrace
       - name: Upload APK

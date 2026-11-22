@@ -2,7 +2,6 @@ package com.divora.music.ui.screens.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -72,7 +72,6 @@ import com.divora.music.ui.theme.LocalContainer
 import com.divora.music.ui.theme.LocalIsDark
 import com.divora.music.ui.theme.LocalUi
 import com.divora.music.ui.theme.DivoraIcons
-import com.divora.music.ui.theme.DivoraTokens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -166,7 +165,6 @@ internal fun SettingsRootContent(
     LaunchedEffect(Unit) { withContext(Dispatchers.Default) { SettingsIndex.prepare() } }
     val accountKey = tr(R.string.account)
     val performanceKey = tr(R.string.performance)
-    val groupCount = SettingsMap.groups.size
 
     SettingsPageScaffold(tr(R.string.settings), bottomPadding, showBack = showBack, onBack = onBack, find = foundHere) {
         item("find") {
@@ -213,14 +211,16 @@ internal fun SettingsRootContent(
             )
         }
         // Not `group(...)`: five titled groups would give the root jump chips, and it has its search for that.
-        SettingsMap.groups.forEachIndexed { i, (group, pages) ->
+        // The header and its card share one item, stacked in a Column: two bare siblings in an item land on top of
+        // each other (1.0.1's headers over their first rows).
+        SettingsMap.groups.forEach { (group, pages) ->
             item("group:" + group.name) {
-                // Each group's tiles are one stop of the listener's light, red at the top to violet at the foot.
-                val tile = DivoraTokens.spectrumAt(i / (groupCount - 1).coerceAtLeast(1).toFloat())
-                SectionHeader(group, tile)
-                SettingsGroup(null) {
-                    pages.forEach { p ->
-                        RootRow(p.key, p.icon, tile, p.title, p.value(settings, dark), selected = p == selected) { onOpen(p, null) }
+                Column {
+                    SectionHeader(group)
+                    SettingsGroup(null) {
+                        pages.forEach { p ->
+                            RootRow(p.key, p.icon, p.title, p.value(settings, dark), selected = p == selected) { onOpen(p, null) }
+                        }
                     }
                 }
             }
@@ -228,18 +228,18 @@ internal fun SettingsRootContent(
     }
 }
 
-/** A root entry's tile: 36 dp, rounded square, a white glyph. */
+/** A root entry's icon: a 36 dp circle in the surface's own grey, like Mochy's settings rows. */
 private val TILE = 36.dp
-private val TILE_GAP = 14.dp
+private val TILE_GAP = 16.dp
 
 /**
- * A root entry: the page's icon in white on a 36 dp rounded-square tile of its group's color, the page's name and,
- * under it, its state in words ([value]). A Link row of the kit in everything else (its heights, gutters, type, test
- * tag and row value), which has no tile; hence its own composable. One line of value at the usual text size (it ends in
- * an ellipsis, as on the mockup); at large text it wraps and the row grows.
+ * A root entry: the page's icon in a plain grey circle, the page's name and, under it, its state in words ([value]).
+ * A Link row of the kit in everything else (its heights, gutters, type, test tag and row value), which has no tile;
+ * hence its own composable. One line of value at the usual text size (it ends in an ellipsis, as on the mockup); at
+ * large text it wraps and the row grows.
  */
 @Composable
-internal fun RootRow(pageKey: String, icon: ImageVector, tile: Color, title: String, value: String, selected: Boolean = false, onClick: () -> Unit) {
+internal fun RootRow(pageKey: String, icon: ImageVector, title: String, value: String, selected: Boolean = false, onClick: () -> Unit) {
     val ui = LocalUi.current
     val scheme = MaterialTheme.colorScheme
     val large = LocalDensity.current.fontScale >= 1.3f
@@ -253,8 +253,8 @@ internal fun RootRow(pageKey: String, icon: ImageVector, tile: Color, title: Str
             .heightIn(min = ui.gap(64.dp).coerceAtLeast(48.dp)).padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(TILE).clip(RoundedCornerShape(10.dp)).background(tile), contentAlignment = Alignment.Center) {
-            Icon(icon, null, Modifier.size(20.dp), tint = Color.White)
+        Box(Modifier.size(TILE).clip(CircleShape).background(scheme.surfaceContainerHighest), contentAlignment = Alignment.Center) {
+            Icon(icon, null, Modifier.size(20.dp), tint = scheme.onSurface)
         }
         Spacer(Modifier.width(TILE_GAP))
         Column(Modifier.weight(1f)) {
@@ -269,10 +269,7 @@ internal fun RootRow(pageKey: String, icon: ImageVector, tile: Color, title: Str
     }
 }
 
-/**
- * The header of the Settings root: Divora's own mark on black, its name and the version running, ringed in split
- * light like the update banner below it.
- */
+/** The header of the Settings root: Divora's own mark on black, its name and the version running. */
 @Composable
 private fun SettingsHeaderCard() {
     val ui = LocalUi.current
@@ -280,7 +277,6 @@ private fun SettingsHeaderCard() {
     val shape = ui.shape(20.dp)
     Column(
         Modifier.fillMaxWidth().settingsCard(shape)
-            .border(1.5.dp, DivoraTokens.spectrum, shape)
             .padding(horizontal = 16.dp, vertical = 14.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -333,25 +329,19 @@ private fun CheckUpdatesRow() {
     }
 }
 
-/** A section's header: its icon on a tile of its group's color, its name and, under it, what lives in it. */
+/**
+ * A section's header, Mochy-clean: just its name and, under it, what lives in it — no tile, no icon, nothing to
+ * crowd the rows below it.
+ */
 @Composable
-private fun SectionHeader(group: SettingsRootGroup, tile: Color) {
+private fun SectionHeader(group: SettingsRootGroup) {
     val scheme = MaterialTheme.colorScheme
-    Row(
-        Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, top = 20.dp, bottom = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(tile), contentAlignment = Alignment.Center) {
-            Icon(group.icon, null, Modifier.size(22.dp), tint = Color.White)
-        }
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text(group.title, Modifier.semantics { heading() }, style = MaterialTheme.typography.titleMedium, color = scheme.onSurface)
-            Text(
-                group.subtitle, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant,
-                maxLines = 1, overflow = TextOverflow.Ellipsis,
-            )
-        }
+    Column(Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, top = 20.dp, bottom = 8.dp)) {
+        Text(group.title, Modifier.semantics { heading() }, style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant)
+        Text(
+            group.subtitle, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
+            maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
