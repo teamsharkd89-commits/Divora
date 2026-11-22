@@ -42,6 +42,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.divora.music.data.prefs.HomeShortcut
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -582,6 +583,7 @@ fun HomeScreen(bottomPadding: androidx.compose.ui.unit.Dp) {
             }
         }
     }
+    UpdateDialog()
     TopScrollEdge({ edge })
     }
 }
@@ -874,6 +876,37 @@ internal fun UpdateBanner(inSettings: Boolean = false) {
             com.divora.music.ui.components.DivoraProgressBar(p.fraction?.let { f -> { f } }, Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp))
         }
     }
+}
+
+/**
+ * "Hay una actualización" as soon as Home is entered, when there is one: the update itself downloads and installs
+ * from inside the app (the banner below stays for its progress). Once per Home shown: "Más tarde" puts the update off
+ * until the next version, and "Actualizar ahora" starts the install (Android's installer still asks once, and the
+ * "Install unknown apps" page is opened by the banner when that's missing).
+ */
+@Composable
+private fun UpdateDialog() {
+    val c = LocalContainer.current
+    val update by c.updates.available.collectAsState()
+    val progress by c.updates.progress.collectAsState()
+    var shown by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    val u = update
+    if (u == null || progress != com.divora.music.data.UpdateProgress.Idle || shown) return
+    AlertDialog(
+        onDismissRequest = { shown = true; c.updates.dismiss() },
+        title = { Text(tr(R.string.divora_is_available, u.version)) },
+        text = { Text(tr(R.string.update_dialog_body)) },
+        confirmButton = {
+            com.divora.music.ui.components.DivoraTextButton(onClick = { shown = true; c.updates.install(u) }) {
+                Text(tr(R.string.update_now))
+            }
+        },
+        dismissButton = {
+            com.divora.music.ui.components.DivoraTextButton(onClick = { shown = true; c.updates.dismiss() }) {
+                Text(tr(R.string.later))
+            }
+        },
+    )
 }
 
 @Composable

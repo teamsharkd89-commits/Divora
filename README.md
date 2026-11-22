@@ -7,7 +7,7 @@
 **Tu música, en una sola app.**
 App gratuita de YouTube Music para Android, con letra palabra por palabra, mezclas en el teléfono, karaoke, modo DJ y Replay. Sin anuncios ni rastreo.
 
-### [⬇ Descargar Divora.apk](../../releases/latest/download/Divora-1.0.0.apk)
+### [⬇ Descargar Divora.apk](../../releases/latest/download/Divora.apk)
 
 </div>
 
@@ -16,7 +16,7 @@ App gratuita de YouTube Music para Android, con letra palabra por palabra, mezcl
 
 ## Instalar
 
-1. Descarga **[Divora.apk](../../releases/latest/download/Divora-1.0.0.apk)** en tu teléfono (Android 8.0 o más).
+1. Descarga **[Divora.apk](../../releases/latest/download/Divora.apk)** en tu teléfono (Android 8.0 o más).
 2. Ábrelo. Android te pedirá permitir instalaciones desde el navegador o el administrador de archivos.
 3. Listo. Puedes iniciar sesión con tu cuenta de YouTube Music para sincronizar tu biblioteca, o saltar ese paso.
 

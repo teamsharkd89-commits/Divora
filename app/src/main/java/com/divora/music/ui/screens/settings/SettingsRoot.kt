@@ -2,6 +2,7 @@ package com.divora.music.ui.screens.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -24,10 +25,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,14 +43,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.divora.music.BuildConfig
 import com.divora.music.R
 import com.divora.music.data.prefs.AppSettings
 import com.divora.music.tr
@@ -60,6 +66,7 @@ import com.divora.music.ui.screens.NavRow
 import com.divora.music.ui.screens.PERFORMANCE_PAUSES
 import com.divora.music.ui.screens.SettingEntry
 import com.divora.music.ui.screens.SettingsIndex
+import com.divora.music.ui.screens.UpdateBanner
 import com.divora.music.ui.theme.LocalAppSettings
 import com.divora.music.ui.theme.LocalContainer
 import com.divora.music.ui.theme.LocalIsDark
@@ -67,6 +74,7 @@ import com.divora.music.ui.theme.LocalUi
 import com.divora.music.ui.theme.DivoraIcons
 import com.divora.music.ui.theme.DivoraTokens
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** The root's own lines in Settings' search: what sits on the root itself, not on a page. */
@@ -182,6 +190,10 @@ internal fun SettingsRootContent(
             }
             return@SettingsPageScaffold
         }
+        item("divora_header") { SettingsHeaderCard() }
+        // The update, when there is one: the same banner as on Home (tap to download and install in the app).
+        item("update") { UpdateBanner(inSettings = true) }
+        item("check_updates") { CheckUpdatesRow() }
         item(accountKey) { account() }
         // Performance mode (1.7.6): one switch for slower phones. Nothing is removed and no choice is changed: the
         // effects that cost the most on every frame pause until it's off again.
@@ -205,7 +217,8 @@ internal fun SettingsRootContent(
             item("group:" + group.name) {
                 // Each group's tiles are one stop of the listener's light, red at the top to violet at the foot.
                 val tile = DivoraTokens.spectrumAt(i / (groupCount - 1).coerceAtLeast(1).toFloat())
-                SettingsGroup(group.title) {
+                SectionHeader(group, tile)
+                SettingsGroup(null) {
                     pages.forEach { p ->
                         RootRow(p.key, p.icon, tile, p.title, p.value(settings, dark), selected = p == selected) { onOpen(p, null) }
                     }
@@ -253,6 +266,92 @@ internal fun RootRow(pageKey: String, icon: ImageVector, tile: Color, title: Str
         }
         Spacer(Modifier.width(12.dp))
         Icon(DivoraIcons.ChevronRight, null, Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * The header of the Settings root: Divora's own mark on black, its name and the version running, ringed in split
+ * light like the update banner below it.
+ */
+@Composable
+private fun SettingsHeaderCard() {
+    val ui = LocalUi.current
+    val scheme = MaterialTheme.colorScheme
+    val shape = ui.shape(20.dp)
+    Column(
+        Modifier.fillMaxWidth().settingsCard(shape)
+            .border(1.5.dp, DivoraTokens.spectrum, shape)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(56.dp).clip(RoundedCornerShape(16.dp)).background(Color.Black), contentAlignment = Alignment.Center) {
+                Icon(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.size(44.dp), tint = Color.Unspecified)
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Divora", style = MaterialTheme.typography.titleLarge, color = scheme.onSurface)
+                Text(
+                    tr(R.string.version_name, BuildConfig.VERSION_NAME),
+                    style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * "Buscar actualizaciones": shown only while no update is offered (the banner above takes its place then). Tapping it
+ * asks GitHub right away; afterwards it says whether Divora is current.
+ */
+@Composable
+private fun CheckUpdatesRow() {
+    val c = LocalContainer.current
+    val update by c.updates.available.collectAsState()
+    if (update != null) return
+    val scope = rememberCoroutineScope()
+    var checking by remember { mutableStateOf(false) }
+    var upToDate by remember { mutableStateOf(false) }
+    SettingsGroup(null) {
+        LinkRow(
+            tr(R.string.check_for_updates),
+            value = when {
+                checking -> tr(R.string.checking)
+                upToDate -> tr(R.string.you_re_up_to_date)
+                else -> tr(R.string.version_name, BuildConfig.VERSION_NAME)
+            },
+            icon = DivoraIcons.Update,
+            action = true,
+            onClick = {
+                if (checking) return@LinkRow
+                scope.launch {
+                    checking = true
+                    upToDate = c.updates.checkNow() == null
+                    checking = false
+                }
+            },
+        )
+    }
+}
+
+/** A section's header: its icon on a tile of its group's color, its name and, under it, what lives in it. */
+@Composable
+private fun SectionHeader(group: SettingsRootGroup, tile: Color) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, top = 20.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(tile), contentAlignment = Alignment.Center) {
+            Icon(group.icon, null, Modifier.size(22.dp), tint = Color.White)
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(group.title, Modifier.semantics { heading() }, style = MaterialTheme.typography.titleMedium, color = scheme.onSurface)
+            Text(
+                group.subtitle, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 

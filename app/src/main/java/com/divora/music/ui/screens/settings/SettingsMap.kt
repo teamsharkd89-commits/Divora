@@ -10,13 +10,13 @@ import com.divora.music.ui.screens.SettingEntry
 import com.divora.music.ui.theme.DivoraIcons
 
 /** The five groups of the Settings root, top to bottom (1.8.4, plan §2.3). */
-enum class SettingsRootGroup(val title: String) {
-    MAKE_IT_YOURS(tr(R.string.make_it_yours)),
+enum class SettingsRootGroup(val title: String, val icon: ImageVector, val subtitle: String) {
+    MAKE_IT_YOURS(tr(R.string.make_it_yours), DivoraIcons.Looks, tr(R.string.make_it_yours_sub)),
     // Its own string: `listening` is Replay's listening time ("再生時間" in Japanese), not this heading.
-    LISTENING(tr(R.string.root_listening)),
-    YOUR_MUSIC(tr(R.string.your_music)),
-    CONNECTIONS(tr(R.string.connections)),
-    APP(tr(R.string.root_app)),
+    LISTENING(tr(R.string.root_listening), DivoraIcons.PlaylistPlay, tr(R.string.root_listening_sub)),
+    YOUR_MUSIC(tr(R.string.your_music), DivoraIcons.DownloadCircle, tr(R.string.your_music_sub)),
+    CONNECTIONS(tr(R.string.connections), DivoraIcons.Cast, tr(R.string.connections_sub)),
+    APP(tr(R.string.root_app), DivoraIcons.Info, tr(R.string.root_app_sub)),
 }
 
 /**

@@ -87,8 +87,9 @@ class UpdateChecker(private val context: Context, private val http: OkHttpClient
     }
 
     /**
-     * The background check Home runs; does nothing if GitHub was asked in the last hour (#278: six hours until 1.8.1,
-     * so a new release could take most of a day to show; an unchanged answer is a cheap "nothing new" now, see [fetch]).
+     * The background check Home runs; does nothing if GitHub was asked in the last fifteen minutes (#278: six hours
+     * until 1.8.1, so a new release could take most of a day to show; an unchanged answer is a cheap "nothing new"
+     * now, see [fetch]).
      */
     fun check() {
         if (checking || !dueToCheck(System.currentTimeMillis(), prefs.getLong("checked_at", 0))) return
@@ -385,8 +386,8 @@ class UpdateChecker(private val context: Context, private val http: OkHttpClient
     companion object {
         const val REPO = "teamsharkd89-commits/Divora"
 
-        /** How long between background checks (#278: was six hours). */
-        const val CHECK_EVERY_MS = 3_600_000L
+        /** How long between background checks (#278: was six hours, then one hour; fifteen minutes now, so a new release is noticed soon after entering the app). */
+        const val CHECK_EVERY_MS = 900_000L
 
         fun dueToCheck(now: Long, checkedAt: Long): Boolean = now - checkedAt !in 0 until CHECK_EVERY_MS
 

@@ -881,6 +881,7 @@
     <string name="turn_on_allow_from_this_source">Turn on \"Allow from this source\", then come back</string>
     <string name="divora_is_available">Divora %1$s is available</string>
     <string name="tap_to_update">Tap to update</string>
+    <string name="update_dialog_body">It downloads and installs from inside the app — no need to go to GitHub.</string>
     <string name="divora_needs_a_reinstall">Divora %1$s needs a reinstall</string>
     <string name="tap_to_move_over_your_things">Tap to move over; your things come with you</string>
     <string name="your_go_to_music">Your go-to music</string>
@@ -2087,6 +2088,7 @@
     <string name="import_move_new_phone">import move new phone</string>
     <string name="about_3">About</string>
     <string name="version_github">version github</string>
+    <string name="version_name">Version %1$s</string>
     <string name="your_data_stays_here">Your data stays here</string>
     <string name="check_for_updates">Check for updates</string>
     <string name="update_new_version">update new version</string>
@@ -2144,7 +2146,12 @@
     <string name="reduced_motion">Reduced motion</string>
     <string name="save_switch_and_share_whole_looks">Save, switch and share whole looks; day and night</string>
     <string name="make_it_yours">Make it yours</string>
+    <string name="make_it_yours_sub">Looks, colors, text, player and lyrics</string>
+    <string name="root_listening_sub">Playback, sound and gestures</string>
     <string name="your_music">Your music</string>
+    <string name="your_music_sub">Downloads, recommendations and history</string>
+    <string name="connections_sub">Car, TV, speakers and accounts</string>
+    <string name="root_app_sub">Language, backup and about</string>
     <string name="devices">Devices</string>
     <string name="search_settings">Search settings</string>
     <string name="no_settings_match">No settings match \"%1$s\"</string>
