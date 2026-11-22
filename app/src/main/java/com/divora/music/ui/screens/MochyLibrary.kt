@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -47,7 +48,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.divora.music.R
-import com.divora.music.data.model.PlaylistItem
+import com.divora.music.data.model.BrowseItem
 import com.divora.music.tr
 import com.divora.music.ui.components.Artwork
 import kotlinx.coroutines.delay
@@ -302,7 +303,7 @@ fun DiceFabButton(description: String, onClick: () -> Unit, modifier: Modifier =
 
 /** Una fila de la ruleta: portada, título y subtítulo de una playlist. */
 @Composable
-private fun RouletteRow(item: PlaylistItem, highlighted: Boolean, modifier: Modifier = Modifier) {
+private fun RouletteRow(item: BrowseItem, highlighted: Boolean, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val tile = if (highlighted) 64.dp else 48.dp
     Row(
@@ -344,8 +345,8 @@ private fun RouletteRow(item: PlaylistItem, highlighted: Boolean, modifier: Modi
  */
 @Composable
 fun DiceRouletteOverlay(
-    playlists: List<PlaylistItem>,
-    onPick: (PlaylistItem) -> Unit,
+    playlists: List<BrowseItem>,
+    onPick: (BrowseItem) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme

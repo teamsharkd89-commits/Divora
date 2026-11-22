@@ -207,6 +207,7 @@ private enum class PlaylistSort(val label: String) { CUSTOM(tr(R.string.your_ord
 @Composable
 fun LibraryScreen(bottomPadding: Dp) {
     val c = LocalContainer.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val nav = LocalNavigator.current
     val settings = LocalAppSettings.current
     val playlists by c.library.playlists.collectAsState()
