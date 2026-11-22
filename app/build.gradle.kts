@@ -26,8 +26,8 @@ android {
         applicationId = "com.divora.music"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.3"
+        versionCode = 5
+        versionName = "1.0.4"
         vectorDrawables { useSupportLibrary = true }
         // The name under the launcher icon; a side-by-side build (below) is called "Divora Dev" so it can't be mistaken for Divora.
         manifestPlaceholders["appLabel"] = "@string/app_name"

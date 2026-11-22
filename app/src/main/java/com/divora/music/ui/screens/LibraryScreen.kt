@@ -228,6 +228,14 @@ fun LibraryScreen(bottomPadding: Dp) {
     val tabs = if (tagList.isEmpty()) LibTab.entries - LibTab.TAGS else LibTab.entries
     val startPage = remember { LibTab.entries.indexOfFirst { it.name == settings.library.startTab }.coerceAtLeast(0).coerceAtMost(LibTab.DOWNLOADS.ordinal) }
     val pager = rememberPagerState(initialPage = startPage) { tabs.size }
+    // Biblioteca estilo Mochy (1.0.4): la portada con tarjetas es la primera vista; las listas
+    // de Prism siguen detrás, una por tarjeta. "‹ Biblioteca" vuelve a la portada.
+    var mochyHome by rememberSaveable { mutableStateOf(true) }
+    var mochyTab by rememberSaveable { mutableStateOf(0) }
+    fun openLibTab(tab: LibTab) {
+        mochyHome = false
+        scope.launch { pager.animateScrollToPage(tabs.indexOf(tab).coerceAtLeast(0)) }
+    }
     // Each of Playlists, Albums and Artists can be a list or a grid of its own (1.7.6).
     fun listFor(tab: LibTab) = (settings.library.views[tab.name] ?: settings.library.view) == com.divora.music.data.prefs.LibraryView.LIST
     val viewTab = LibTab.entries[pager.currentPage].takeIf { it == LibTab.PLAYLISTS || it == LibTab.ALBUMS || it == LibTab.ARTISTS }
@@ -456,6 +464,114 @@ fun LibraryScreen(bottomPadding: Dp) {
                 if (asList) tr(R.string.show_as_grid) else tr(R.string.show_as_list),
             ) { c.settings.setLibraryTabView(viewTab.name, if (asList) com.divora.music.data.prefs.LibraryView.GRID else com.divora.music.data.prefs.LibraryView.LIST) }
             if (com.divora.music.data.prefs.NavTab.SETTINGS !in settings.navTabs) com.divora.music.ui.components.RoundAction(DivoraIcons.SettingsFilled, tr(R.string.settings)) { nav.go(Routes.SETTINGS) }
+        }
+        if (mochyHome) {
+            // Portada estilo Mochy, con el sistema de Prism detrás: los datos son los de siempre
+            // (liked, álbumes, artistas, playlists, descargas, local, importados), solo cambia
+            // la presentación. Historial, Descargas y Etiquetas siguen, como filas de la portada.
+            val downloadedSongs = remember(dls) {
+                dls.values.filter { it.state == androidx.media3.exoplayer.offline.Download.STATE_COMPLETED }.mapNotNull { it.song }
+            }
+            val recentlyAdded = remember(albums, savedAlbums, albumsSeen) {
+                albumsRecentlyAdded(albums, savedAlbums.associate { it.id to it.savedAt }, albumsSeen)
+            }
+            val localSongs = remember(localTracks) { localTracks.map { it.song } }
+            MochyLibPills(
+                listOf(tr(R.string.all), tr(R.string.local_files), tr(R.string.downloads), tr(R.string.imported)),
+                mochyTab,
+                { mochyTab = it },
+            )
+            androidx.compose.foundation.lazy.LazyColumn(
+                Modifier.weight(1f),
+                contentPadding = PaddingValues(bottom = bottomPadding + 16.dp),
+            ) {
+                item(key = "search") {
+                    MochyHomeRow(tr(R.string.search_your_library), tr(R.string.songs) + " · " + tr(R.string.albums) + " · " + tr(R.string.artists), { nav.go(Routes.librarySearch()) }, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                }
+                when (mochyTab) {
+                    0 -> {
+                        item(key = "cards1") {
+                            Row(Modifier.padding(horizontal = 16.dp, vertical = 5.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                MochyCategoryCard(tr(R.string.songs), shownSongs.size, liked.take(4).map { it.thumbnail }, { openLibTab(LibTab.SONGS) }, Modifier.weight(1f))
+                                MochyCategoryCard(tr(R.string.playlists), myPlaylists.size, myPlaylists.take(4).map { it.thumbnail }, { openLibTab(LibTab.PLAYLISTS) }, Modifier.weight(1f))
+                            }
+                        }
+                        item(key = "cards2") {
+                            Row(Modifier.padding(horizontal = 16.dp, vertical = 5.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                MochyCategoryCard(tr(R.string.albums), albums.size, albums.take(4).map { it.thumbnail }, { openLibTab(LibTab.ALBUMS) }, Modifier.weight(1f))
+                                MochyCategoryCard(tr(R.string.artists), artists.size, artists.take(4).map { it.thumbnail }, { openLibTab(LibTab.ARTISTS) }, Modifier.weight(1f), roundCovers = true)
+                            }
+                        }
+                        if (recentlyAdded.isNotEmpty()) item(key = "recent") {
+                            MochyWideCard(
+                                tr(R.string.recently_added), recentlyAdded.size, recentlyAdded.take(4).map { it.thumbnail },
+                                {
+                                    c.library.setSort("library:albums", AlbumSort.ADDED.name)
+                                    openLibTab(LibTab.ALBUMS)
+                                },
+                                Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+                            )
+                        }
+                        if (liked.isNotEmpty()) item(key = "liked") {
+                            MochyWideCard(tr(R.string.liked), liked.size, liked.take(4).map { it.thumbnail }, { openLibTab(LibTab.SONGS) }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+                        }
+                        item(key = "history") {
+                            MochyHomeRow(tr(R.string.history), tr(R.string.everything_you_ve_played), { openLibTab(LibTab.HISTORY) }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+                        }
+                        item(key = "downloads") {
+                            MochyHomeRow(tr(R.string.downloads), com.divora.music.data.model.songCount(downloadedSongs.size), { openLibTab(LibTab.DOWNLOADS) }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+                        }
+                        if (tagList.isNotEmpty()) item(key = "tags") {
+                            MochyHomeRow(tr(R.string.tags), trp(R.plurals.n_tags, tagList.size), { openLibTab(LibTab.TAGS) }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+                        }
+                        if (liked.isEmpty() && albums.isEmpty() && artists.isEmpty() && myPlaylists.isEmpty()) item(key = "empty") {
+                            EmptyState(DivoraIcons.LibraryFilled, tr(R.string.nothing_here_yet), tr(R.string.like_or_download_songs_or_star))
+                        }
+                    }
+                    1 -> {
+                        // Local: los archivos del teléfono, tal cual, para reproducir desde aquí.
+                        if (localSongs.isEmpty()) item(key = "local-empty") {
+                            EmptyState(DivoraIcons.Phone, tr(R.string.local_files), tr(R.string.music_files_on_this_phone))
+                        }
+                        items(localSongs, key = { "ls" + it.id }) { s ->
+                            SongRow(s) { c.player.playQueue(localSongs, localSongs.indexOf(s), com.divora.music.playback.QueueSource(com.divora.music.playback.QueueKind.LIBRARY, tr(R.string.local_files))) }
+                        }
+                        item(key = "local-open") {
+                            MochyHomeRow(tr(R.string.local_files), com.divora.music.data.model.songCount(localSongs.size), { nav.go(Routes.LOCAL) }, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                        }
+                    }
+                    2 -> {
+                        // En caché / Descargas: las canciones ya bajadas, para reproducir sin internet.
+                        if (downloadedSongs.isEmpty()) item(key = "cached-empty") {
+                            EmptyState(DivoraIcons.DownloadDone, tr(R.string.downloads), tr(R.string.like_or_download_songs_or_star))
+                        }
+                        items(downloadedSongs, key = { "ds" + it.id }) { s ->
+                            SongRow(s) { c.player.playQueue(downloadedSongs, downloadedSongs.indexOf(s), com.divora.music.playback.QueueSource(com.divora.music.playback.QueueKind.LIBRARY, tr(R.string.downloads))) }
+                        }
+                        item(key = "cached-open") {
+                            MochyHomeRow(tr(R.string.downloads), com.divora.music.data.model.songCount(downloadedSongs.size), { nav.go(Routes.DOWNLOADS) }, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                        }
+                    }
+                    else -> {
+                        // Importado: traer playlists de fuera y las de Spotify que sigues.
+                        if (settings.isLoggedIn) item(key = "import") {
+                            MochyHomeRow(tr(R.string.import_playlists), tr(R.string.from_spotify_apple_music), { nav.go(Routes.IMPORT) }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+                        }
+                        item(key = "import-link") {
+                            MochyHomeRow(tr(R.string.open_a_link), tr(R.string.youtube_com_playlist_list), { openingLink = true }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+                        }
+                        items(spotifyFollowed, key = { "sf" + it.id }) { p ->
+                            MochyHomeRow(p.name, p.ownerName.ifBlank { tr(R.string.spotify) }, { followedOpen = p }, Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+                        }
+                        if (!settings.isLoggedIn && spotifyFollowed.isEmpty()) item(key = "import-empty") {
+                            EmptyState(DivoraIcons.PlaylistAdd, tr(R.string.import_playlists), tr(R.string.or_sign_in_to_bring_your))
+                        }
+                    }
+                }
+            }
+        } else {
+        Row(Modifier.padding(start = 8.dp, top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+            DivoraTextButton(onClick = { mochyHome = true }) { Text("‹ " + tr(R.string.library)) }
         }
         PagerChips(tabs.map { it.label }, pager)
 
@@ -855,6 +971,7 @@ fun LibraryScreen(bottomPadding: Dp) {
                 scope.launch { runCatching { com.divora.music.data.HistoryRemoval.restore(c.db, removed) }; forgetYearSoFar() }
             }
             }
+        }
         }
     }
 
